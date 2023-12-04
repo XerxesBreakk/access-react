@@ -13,7 +13,7 @@ const useAxiosPrivate = () => {
         const requestIntercept = axiosPrivate.interceptors.request.use(
             config => {
                 if (!config.headers['Authorization']) {
-                    config.headers['Authorization'] = `Bearer ${state.access}`;
+                    config.headers['Authorization'] = `JWT ${state.access}`;
                 }
                 return config;
             }, (error) => Promise.reject(error)
@@ -26,8 +26,8 @@ const useAxiosPrivate = () => {
                 if (error.response.status === 401 && !prevRequest.sent) {
                     prevRequest.sent = true;
                     const newAccessToken = await refresh();
-                    prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                    console.log(newAccessToken);
+                    prevRequest.headers['Authorization'] = `JWT ${newAccessToken}`;
+                    console.log(newAccessToken); //TODO delete console log
                     return axiosPrivate(prevRequest);
                 }
                 return Promise.reject(error);

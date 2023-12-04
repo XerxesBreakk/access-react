@@ -9,14 +9,17 @@ import {
 import TextField from "@mui/material/TextField";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
-import { useNavigate, useLocation, useState } from "react";
+import {  useState } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import Alert from "@mui/material/Alert";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate"
 
 const LOGIN_URL = "/auth/jwt/create";
+const USER_INFO_URL ='/auth/users/me/';
 
 const Index = () => {
   const theme = useTheme();
@@ -26,8 +29,16 @@ const Index = () => {
   const [errMsg, setErrMsg] = useState("");
 
   //Auth Context
-  const {auth,login}=useAuth();
+  const {auth,login_success,login_fail,user_load_success}=useAuth();
   
+  //Navigate config
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/dash';
+  
+  //Axios Private
+  const axiosPrivate=useAxiosPrivate();
+
   //Formik Validation
   const formik = useFormik({
     initialValues: { username: "", password: "" },
@@ -37,7 +48,7 @@ const Index = () => {
           headers: { "Content-type": "application/json" },
           withCredentials: true,
         });
-        
+        login_success(response.data);
       } catch (error) {
         if (!error.response) {
           setErrMsg("Servidor fuera de linea.");
@@ -49,8 +60,8 @@ const Index = () => {
         } else {
           setErrMsg("Login Fallido.");
         }
-        console.log(errMsg);
-      }
+        login_fail();
+      }  
     },
     validationSchema: Yup.object({
       username: Yup.string()
@@ -113,6 +124,9 @@ const Index = () => {
           </Button>
         </Box>
       </Paper>
+      <div>
+        {auth}
+      </div>
     </Box>
   );
 };
